@@ -1,0 +1,178 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Purchase Order</title>
+  <link rel="stylesheet" href="assets/doc.css">
+</head>
+<body data-doc="purchase">
+  <div class="toolbar noprint">
+    <a href="00_Dashboard.html">Dashboard</a>
+    <a href="01_Enquiry_Sheet.html">Enquiry</a>
+    <a href="02_Store_Requisition.html">Store</a>
+    <a href="03_Outside_Test_Pass.html">Test pass</a>
+    <a href="04_Store_Stock_Entry.html">Store stock</a>
+    <a href="05_3D_Print_Job.html">3D print</a>
+    <a href="06_Purchase_Order.html" aria-current="page">Purchase order</a>
+    <a href="07_Work_Assign.html">Assign work</a>
+    <a href="08_My_Work.html">My work</a>
+    <a href="09_Project_Pack.html">Project pack</a>
+    <button type="button" id="btnOpen">Open master Excel</button>
+    <button type="button" id="btnReload">Reload</button>
+    <button type="button" id="btnNew">New PO</button>
+    <button type="button" class="primary save-btn" id="btnSave">Save</button>
+    <button type="button" id="btnPrint">Print A4</button>
+    <input id="webAppUrl" type="hidden">
+    <button type="button" id="btnCloud" hidden>Connect cloud</button>
+    <span class="status" id="status"></span>
+    <input id="fileFallback" type="file" accept=".xlsx" hidden>
+  </div>
+
+  <details class="help noprint">
+    <summary>Purchase order to vendor</summary>
+    <p>Issue a PO to a vendor with your company name and logo. Vendor name is editable. Terms and conditions are editable. Add or replace the authorize signature image (white background) from assets or upload for print.</p>
+  </details>
+  <div class="banner noprint" id="banner" hidden></div>
+  <div class="picker noprint">
+    <label>Open a saved PO
+      <select id="existingDoc"></select>
+    </label>
+  </div>
+
+  <form id="docForm" autocomplete="off">
+    <article class="page po-page">
+      <header class="letterhead">
+        <img id="companyLogo" alt="Company logo" src="assets/company-logo.jpg">
+        <div class="who">
+          <div id="companyName" class="company">AMOS</div>
+          <div id="companyTagline" class="tag">Drones &amp; Related Electronics</div>
+          <div id="companyContact" class="contact"></div>
+        </div>
+        <div class="docid">
+          <div class="kicker">Vendor purchase order</div>
+          <h1>Purchase Order</h1>
+          <div class="badge" id="draftTag"></div>
+        </div>
+      </header>
+
+      <div class="meta">
+        <label class="cell"><span class="lbl">PO number</span><input id="PoNo" aria-label="PO number"></label>
+        <label class="cell"><span class="lbl">Project number</span><input id="ProjectNo" readonly aria-label="Project number"></label>
+        <label class="cell"><span class="lbl">Enquiry number</span><select id="EnquiryNo" aria-label="Enquiry number"></select></label>
+        <label class="cell"><span class="lbl">Status</span><select id="Status" aria-label="Status"></select></label>
+      </div>
+
+      <ol class="chain" id="chain"></ol>
+
+      <section class="section">
+        <h2>1. Vendor</h2>
+        <div class="g2">
+          <label class="f span2"><span>Vendor name</span><input id="VendorName" placeholder="Enter vendor / supplier name"></label>
+          <label class="f span2"><span>Vendor address</span><textarea id="VendorAddress" rows="3" placeholder="Street, city, pin, country"></textarea></label>
+          <label class="f"><span>Vendor contact</span><input id="VendorContact"></label>
+          <label class="f"><span>Vendor phone</span><input id="VendorPhone"></label>
+          <label class="f"><span>Vendor email</span><input id="VendorEmail" type="email"></label>
+          <label class="f"><span>GST / Tax ID</span><input id="VendorTaxId"></label>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>2. Order details</h2>
+        <div class="g3">
+          <label class="f"><span>PO date</span><input id="PoDate" type="date"></label>
+          <label class="f"><span>Delivery date</span><input id="DeliveryDate" type="date"></label>
+          <label class="f"><span>Currency</span><select id="Currency"></select></label>
+          <label class="f"><span>Payment terms</span><input id="PaymentTerms" placeholder="e.g. Net 30 / Advance 50%"></label>
+          <label class="f"><span>Delivery place</span><input id="DeliveryPlace"></label>
+          <label class="f"><span>Prepared by</span><input id="PreparedBy" list="peopleAll"></label>
+          <label class="f span3"><span>Project</span><input id="projectTitle" readonly></label>
+          <label class="f span3"><span>Subject / remarks</span><textarea id="Remarks" rows="2"></textarea></label>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>3. Line items</h2>
+        <table class="lines" id="poLines">
+          <thead>
+            <tr>
+              <th class="n">#</th>
+              <th>Item / code</th>
+              <th>Description</th>
+              <th class="u">UOM</th>
+              <th class="q">Qty</th>
+              <th class="q">Rate</th>
+              <th class="q">Amount</th>
+              <th class="x noprint"></th>
+            </tr>
+          </thead>
+          <tbody id="poLineBody"></tbody>
+        </table>
+        <button type="button" class="rowbtn noprint" id="btnAddPoLine">Add line</button>
+        <div class="po-totals">
+          <div>Subtotal <strong id="poSubtotal">0.00</strong></div>
+          <label class="f po-tax"><span>Tax %</span><input id="TaxPercent" type="number" min="0" step="0.01" value="18"></label>
+          <div>Tax <strong id="poTax">0.00</strong></div>
+          <div class="po-grand">Grand total <strong id="poGrand">0.00</strong></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>4. Terms and conditions</h2>
+        <label class="f span2">
+          <span>Editable terms (printed on the PO)</span>
+          <textarea id="TermsText" class="po-terms" rows="8"></textarea>
+        </label>
+      </section>
+
+      <section class="section">
+        <h2>5. Authorization</h2>
+        <div class="po-auth">
+          <div class="po-auth-copy">
+            <p class="note">For <strong id="buyerNameLabel">AMOS</strong>. Place a white-background signature image in <code>assets/authorize-signature.svg</code> (or .png/.jpg), or upload below for this print session.</p>
+            <div class="g2 noprint">
+              <label class="f"><span>Signature file in assets</span>
+                <select id="SignatureFile">
+                  <option value="assets/authorize-signature.svg">assets/authorize-signature.svg</option>
+                  <option value="assets/authorize-signature.png">assets/authorize-signature.png</option>
+                  <option value="assets/authorize-signature.jpg">assets/authorize-signature.jpg</option>
+                </select>
+              </label>
+              <label class="f"><span>Upload authorize image</span>
+                <input id="signatureUpload" type="file" accept="image/*">
+              </label>
+              <label class="f"><span>Authorized signatory name</span><input id="AuthorizerName" list="peopleAll"></label>
+              <label class="f"><span>Title / designation</span><input id="AuthorizerTitle" placeholder="e.g. Project Coordinator"></label>
+              <label class="f"><span>Authorize date</span><input id="AuthorizeDate" type="date"></label>
+              <label class="f"><span>Decision</span><select id="AuthorizeDecision"></select></label>
+            </div>
+          </div>
+          <div class="po-sign-box">
+            <span class="stamp pending" id="stampAuth">Pending</span>
+            <div class="po-sign-frame">
+              <img id="authorizeSignature" class="po-sign-img" src="assets/authorize-signature.svg" alt="Authorize signature">
+            </div>
+            <div class="sign-line"><i></i><em id="sigAuthLabel">Authorized signatory</em></div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="foot">
+        <div>
+          <div>File name: <strong id="fileNameLabel">—</strong></div>
+          <div>Revision <span id="revLabel">—</span></div>
+        </div>
+        <div>Updated <span id="updatedLabel">—</span></div>
+      </footer>
+    </article>
+  </form>
+
+  <datalist id="peopleAll"></datalist>
+  <input id="SignatureDataUrl" type="hidden">
+
+  <script src="assets/exceljs.min.js"></script>
+  <script src="assets/cloud-config.js"></script>
+  <script src="assets/auth.js"></script>
+  <script src="assets/master.js"></script>
+</body>
+</html>

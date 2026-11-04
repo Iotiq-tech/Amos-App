@@ -1,0 +1,190 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Technical Enquiry Sheet</title>
+  <link rel="stylesheet" href="assets/doc.css">
+</head>
+<body data-doc="enquiry">
+  <div class="toolbar noprint">
+    <a href="00_Dashboard.html">Dashboard</a>
+    <a href="01_Enquiry_Sheet.html" aria-current="page">Enquiry</a>
+    <a href="02_Store_Requisition.html">Store</a>
+    <a href="03_Outside_Test_Pass.html">Test pass</a>
+    <a href="04_Store_Stock_Entry.html">Store stock</a>
+    <a href="05_3D_Print_Job.html">3D print</a>
+    <a href="06_Purchase_Order.html">Purchase order</a>
+    <a href="07_Work_Assign.html">Assign work</a>
+    <a href="08_My_Work.html">My work</a>
+    <a href="09_Project_Pack.html">Project pack</a>
+    <button type="button" id="btnOpen">Open master Excel</button>
+    <button type="button" id="btnReload">Reload</button>
+    <button type="button" id="btnNew">New enquiry</button>
+    <button type="button" class="primary save-btn" id="btnSave">Save</button>
+    <button type="button" id="btnPrint">Print A4</button>
+    <input id="webAppUrl" type="hidden">
+    <button type="button" id="btnCloud" hidden>Connect cloud</button>
+    <span class="status" id="status"></span>
+    <input id="fileFallback" type="file" accept=".xlsx" hidden>
+  </div>
+
+  <details class="help noprint">
+    <summary>How this sheet links to the workbook</summary>
+    <p>Saving this form writes one row on the Enquiries sheet and creates the project number. Store requisitions, outside test passes, POC, pilot, full production, and testing all keep that same project number. Pick lists for people, drone types, electronics, budgets, and locations come from the master workbook. The worked example is ENQ-DRN-2026-001 / PRJ-DRN-2026-001.</p>
+  </details>
+  <div class="banner noprint" id="banner" hidden></div>
+  <div class="picker noprint">
+    <label>Open a saved enquiry
+      <select id="existingDoc"></select>
+    </label>
+  </div>
+
+  <form id="docForm" autocomplete="off">
+    <article class="page">
+      <header class="letterhead">
+        <img id="companyLogo" alt="Company logo" src="assets/company-logo.jpg">
+        <div class="who">
+          <div id="companyName" class="company">AMOS</div>
+          <div id="companyTagline" class="tag">Drones &amp; Related Electronics</div>
+          <div id="companyContact" class="contact"></div>
+        </div>
+        <div class="docid">
+          <div class="kicker" id="docKicker">Client / management input</div>
+          <h1 id="docTitle">Technical Enquiry Sheet</h1>
+          <div class="badge" id="draftTag"></div>
+        </div>
+      </header>
+
+      <div class="meta">
+        <label class="cell">
+          <span class="lbl">Project number</span>
+          <input id="ProjectNo" aria-label="Project number">
+        </label>
+        <label class="cell">
+          <span class="lbl">Enquiry number</span>
+          <input id="EnquiryNo" aria-label="Enquiry number">
+        </label>
+        <label class="cell">
+          <span class="lbl">Enquiry date</span>
+          <input id="EnquiryDate" type="date" aria-label="Enquiry date">
+        </label>
+        <label class="cell">
+          <span class="lbl">Status</span>
+          <select id="Status" aria-label="Status"></select>
+        </label>
+      </div>
+
+      <ol class="chain" id="chain"></ol>
+
+      <section class="section">
+        <h2>1. Who is raising this</h2>
+        <div class="g3">
+          <label class="f"><span>Source</span><select id="Source"></select></label>
+          <label class="f"><span>Raised by</span><input id="RaisedBy" list="peopleAll"></label>
+          <label class="f"><span>Project coordinator</span><input id="Coordinator" list="peopleCoord"></label>
+          <label class="f"><span>Client / organisation</span><input id="ClientOrg"></label>
+          <label class="f"><span>Contact name</span><input id="ContactName" list="peopleAll"></label>
+          <label class="f"><span>Phone</span><input id="ContactPhone"></label>
+          <label class="f span2"><span>Email</span><input id="ContactEmail" type="email"></label>
+          <label class="f"><span>Priority</span><select id="Priority"></select></label>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>2. Project</h2>
+        <div class="g2">
+          <label class="f span2"><span>Project title</span><input id="ProjectTitle"></label>
+          <label class="f"><span>Product family</span><select id="ProductFamily"></select></label>
+          <label class="f"><span>Drone type</span><input id="DroneType" list="droneList"></label>
+          <label class="f"><span>Quantity</span><input id="Quantity" type="number" min="0" step="1"></label>
+          <label class="f"><span>Required by</span><input id="RequiredBy" type="date"></label>
+          <label class="f span2"><span>Location / site</span><input id="Location" list="locationList"></label>
+        </div>
+        <div class="checks-title" style="margin-top:2mm">Related electronics</div>
+        <div class="checks" id="electronicsList"></div>
+      </section>
+
+      <section class="section">
+        <h2>3. Technical description</h2>
+        <div class="g2">
+          <label class="f span2"><span>Mission / use</span><textarea id="Mission"></textarea></label>
+          <label class="f"><span>Operating environment</span><input id="Environment"></label>
+          <label class="f"><span>Endurance / range</span><input id="Endurance"></label>
+          <label class="f"><span>Payload</span><input id="Payload"></label>
+          <label class="f"><span>Power source</span><input id="PowerSource"></label>
+          <label class="f"><span>Communication link</span><input id="CommsLink"></label>
+          <label class="f"><span>Sensors</span><input id="Sensors"></label>
+          <label class="f span2"><span>Ground equipment</span><input id="GroundEquipment"></label>
+          <label class="f span2"><span>Technical requirements</span><textarea id="TechnicalRequirements"></textarea></label>
+          <label class="f"><span>Constraints</span><textarea id="Constraints"></textarea></label>
+          <label class="f"><span>Acceptance</span><textarea id="Acceptance"></textarea></label>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>4. Budget</h2>
+        <div class="g3">
+          <label class="f"><span>Budget code</span><select id="BudgetCode"></select></label>
+          <label class="f"><span>Estimated budget</span><input id="EstimatedBudget" type="number" min="0" step="1"></label>
+          <label class="f"><span>Currency</span><select id="Currency"></select></label>
+          <label class="f span3"><span>Remarks</span><textarea id="Remarks"></textarea></label>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>5. Project number carried forward</h2>
+        <p class="note">This project number stays on the store requisition, the outside test pass, and the later POC, pilot, full production, and testing sheets.</p>
+        <table class="trail">
+          <thead>
+            <tr><th>Stage</th><th>Status</th><th>Requisition</th><th>Pass</th><th>Notes</th></tr>
+          </thead>
+          <tbody id="trailBody"></tbody>
+        </table>
+      </section>
+
+      <section class="section">
+        <h2>6. Linked file names</h2>
+        <table class="links">
+          <thead><tr><th>Document</th><th>Number</th><th>File name</th></tr></thead>
+          <tbody id="linkBody"></tbody>
+        </table>
+      </section>
+
+      <section class="section">
+        <h2>7. Signatures</h2>
+        <div class="pair">
+          <div class="box">
+            <h3>Raised by</h3>
+            <div id="sigRaised">—</div>
+            <div class="sign-line"><i></i><em>Signature and date</em></div>
+          </div>
+          <div class="box">
+            <h3>Project coordinator</h3>
+            <div id="sigCoord">—</div>
+            <div class="sign-line"><i></i><em>Signature and date</em></div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="foot">
+        <div>
+          <div>File name: <strong id="fileNameLabel">—</strong></div>
+          <div>Controlled when saved to the master workbook. Printed copies show revision <span id="revLabel">—</span>.</div>
+        </div>
+        <div>Updated <span id="updatedLabel">—</span></div>
+      </footer>
+    </article>
+  </form>
+
+  <datalist id="peopleAll"></datalist>
+  <datalist id="peopleCoord"></datalist>
+  <datalist id="droneList"></datalist>
+  <datalist id="locationList"></datalist>
+
+  <script src="assets/exceljs.min.js"></script>
+  <script src="assets/cloud-config.js"></script>
+  <script src="assets/auth.js"></script>
+  <script src="assets/master.js"></script>
+</body>
+</html>

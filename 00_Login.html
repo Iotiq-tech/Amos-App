@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AMOS Login</title>
+  <link rel="stylesheet" href="assets/doc.css">
+</head>
+<body data-doc="login">
+  <div class="login-wrap noprint">
+    <form class="login-card" id="loginForm" autocomplete="on">
+      <img src="assets/company-logo.jpg" alt="AMOS logo" onerror="this.src='assets/Amos.jpg'">
+      <h1 id="companyName">AMOS</h1>
+      <div class="sub">Project documents · sign in to continue</div>
+      <label>Username<input id="username" name="username" required autofocus></label>
+      <label>Password<input id="password" name="password" type="password" required></label>
+      <input id="webAppUrl" type="hidden">
+      <button type="submit" id="btnLogin">Sign in</button>
+      <div class="err" id="err"></div>
+      <p class="sub" style="margin-top:14px">Use the username given by your coordinator.</p>
+      <button type="button" class="settings-btn" id="btnLoginSettings" style="width:100%;margin-top:8px">Connection settings</button>
+    </form>
+  </div>
+  <div id="cloudLoading" class="cloud-loading noprint" hidden></div>
+  <script src="assets/cloud-config.js"></script>
+  <script src="assets/auth.js"></script>
+  <script>
+  (function () {
+    var cfg = window.DRONE_DOC_CONFIG || {};
+    var box = document.getElementById("webAppUrl");
+    var configured = (cfg.webAppUrl || "").trim();
+    try {
+      if (configured) localStorage.setItem("droneDoc.webAppUrl", configured);
+      box.value = configured || localStorage.getItem("droneDoc.webAppUrl") || "";
+    } catch (e) { box.value = configured; }
+
+    document.getElementById("btnLoginSettings").addEventListener("click", function () {
+      if (window.DroneAuth && DroneAuth.openSettings) DroneAuth.openSettings();
+    });
+
+    function showLoading(msg) {
+      DroneAuth.showLoading(msg || "Signing you in…");
+    }
+    function hideLoading() { DroneAuth.hideLoading(); }
+
+    function gasRequest(action, payload) {
+      var url = (box.value || "").trim();
+      if (!url) return Promise.reject(new Error("Cloud is not configured. Open Connection settings."));
+      return new Promise(function (resolve, reject) {
+        var cb = "droneDocCb_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+        var script = document.createElement("script");
+        var settled = false;
+        var timer = setTimeout(function () {
+          finish(new Error("Cloud did not answer. Ask your coordinator to publish a new Apps Script version (access = Anyone)."));
+        }, 25000);
+        function finish(err, data) {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          try { delete window[cb]; } catch (e) { window[cb] = undefined; }
+          if (script.parentNode) script.remove();
+          if (err) reject(err); else resolve(data);
+        }
+        window[cb] = function (data) { finish(null, data); };
+        var params = new URLSearchParams();
+        var body = Object.assign({ action: action }, payload || {});
+        params.set("callback", cb);
+        params.set("action", action);
+        params.set("payload", JSON.stringify(body));
+        script.onerror = function () {
+          finish(new Error("Could not reach the cloud service. Check Connection settings."));
+        };
+        script.src = url + (url.indexOf("?") >= 0 ? "&" : "?") + params.toString();
+        document.head.appendChild(script);
+      });
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", async function (event) {
+      event.preventDefault();
+      var err = document.getElementById("err");
+      err.textContent = "";
+      showLoading("Signing you in and loading access rights…");
+      try {
+        localStorage.setItem("droneDoc.webAppUrl", box.value.trim());
+        var data = await gasRequest("login", {
+          username: document.getElementById("username").value.trim(),
+          password: document.getElementById("password").value
+        });
+        if (!data.ok) throw new Error(data.error || "Login failed.");
+        DroneAuth.writeSession(data.session);
+        var next = new URLSearchParams(location.search).get("next") || "00_Dashboard.html";
+        location.href = next;
+      } catch (ex) {
+        err.textContent = ex.message || String(ex);
+        hideLoading();
+      }
+    });
+
+    if (DroneAuth.token()) location.href = "00_Dashboard.html";
+  }());
+  </script>
+</body>
+</html>

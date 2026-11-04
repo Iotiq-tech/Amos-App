@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My project work</title>
+  <link rel="stylesheet" href="assets/doc.css">
+</head>
+<body data-doc="workreport">
+  <div class="toolbar noprint">
+    <a href="00_Dashboard.html">Dashboard</a>
+    <a href="07_Work_Assign.html">Assign work</a>
+    <a href="08_My_Work.html" aria-current="page">My work</a>
+    <a href="09_Project_Pack.html">Project pack</a>
+    <button type="button" id="btnReload">Reload</button>
+    <button type="button" class="primary save-btn" id="btnSubmitWork">Submit for authorization</button>
+    <input id="webAppUrl" type="hidden">
+    <span class="status" id="status"></span>
+  </div>
+
+  <details class="help noprint" open>
+    <summary>Your assigned project work</summary>
+    <p>Work is assigned by your reporting manager against a project name. Complete the task, add remarks, and submit. The manager authorizes complete / not complete. Status syncs into the project pack.</p>
+  </details>
+
+  <form id="docForm" autocomplete="off">
+    <article class="page">
+      <header class="letterhead">
+        <img id="companyLogo" alt="Company logo" src="assets/company-logo.jpg">
+        <div class="who">
+          <div id="companyName" class="company">AMOS</div>
+          <div class="tag">Individual work report</div>
+          <div id="companyContact" class="contact"></div>
+        </div>
+        <div class="docid">
+          <div class="kicker">Assigned to you</div>
+          <h1>My work</h1>
+          <div class="badge" id="draftTag"></div>
+        </div>
+      </header>
+
+      <div class="picker noprint">
+        <label>Select assignment
+          <select id="existingDoc"></select>
+        </label>
+      </div>
+
+      <div class="meta">
+        <label class="cell"><span class="lbl">Work ID</span><input id="WorkId" readonly></label>
+        <label class="cell"><span class="lbl">Project</span><input id="ProjectNo" readonly></label>
+        <label class="cell"><span class="lbl">Project title</span><input id="ProjectTitle" readonly></label>
+        <label class="cell"><span class="lbl">Status</span><input id="Status" readonly></label>
+      </div>
+
+      <section class="section">
+        <h2>Task</h2>
+        <div class="g2">
+          <label class="f"><span>Department</span><input id="Department" readonly></label>
+          <label class="f"><span>Process stage</span><input id="ProcessStage" readonly></label>
+          <label class="f"><span>Due date</span><input id="DueDate" readonly></label>
+          <label class="f"><span>Assigned by</span><input id="AssignedByName" readonly></label>
+          <label class="f span2"><span>Task title</span><input id="TaskTitle" readonly></label>
+          <label class="f span2"><span>Task detail</span><textarea id="TaskDetail" rows="3" readonly></textarea></label>
+          <label class="f span2"><span>Your remarks (required to submit)</span><textarea id="AssigneeRemarks" rows="3" placeholder="What you completed / blockers"></textarea></label>
+          <label class="f"><span>Manager decision</span><input id="ManagerDecision" readonly></label>
+          <label class="f"><span>Manager remarks</span><input id="ManagerRemarks" readonly></label>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>All my assignments</h2>
+        <table class="dash-table">
+          <thead>
+            <tr><th>Work</th><th>Project</th><th>Task</th><th>Stage</th><th>Status</th><th>Manager</th></tr>
+          </thead>
+          <tbody id="myWorkBody"></tbody>
+        </table>
+      </section>
+    </article>
+  </form>
+
+  <script src="assets/cloud-config.js"></script>
+  <script src="assets/auth.js"></script>
+  <script src="assets/work.js"></script>
+</body>
+</html>

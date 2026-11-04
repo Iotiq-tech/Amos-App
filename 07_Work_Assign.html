@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Assign project work</title>
+  <link rel="stylesheet" href="assets/doc.css">
+</head>
+<body data-doc="workassign">
+  <div class="toolbar noprint">
+    <a href="00_Dashboard.html">Dashboard</a>
+    <a href="07_Work_Assign.html" aria-current="page">Assign work</a>
+    <a href="08_My_Work.html">My work</a>
+    <a href="09_Project_Pack.html">Project pack</a>
+    <button type="button" id="btnReload">Reload</button>
+    <button type="button" id="btnNew">New assignment</button>
+    <button type="button" class="primary save-btn" id="btnSave">Save assignment</button>
+    <button type="button" id="btnAuthorize">Authorize selected</button>
+    <button type="button" id="btnSyncPack">Sync project PPT</button>
+    <input id="webAppUrl" type="hidden">
+    <span class="status" id="status"></span>
+  </div>
+
+  <details class="help noprint" open>
+    <summary>Reporting manager — assign work by project</summary>
+    <p>Pick the project (enquiry), department, workflow stage, and the person who must complete the task. Saving writes the assignment and refreshes the shared Google Slides / PPT project pack (same format for every project). When the user submits, authorize with Approved/Rejected and remarks.</p>
+  </details>
+  <div class="banner noprint" id="banner" hidden></div>
+
+  <form id="docForm" autocomplete="off">
+    <article class="page">
+      <header class="letterhead">
+        <img id="companyLogo" alt="Company logo" src="assets/company-logo.jpg">
+        <div class="who">
+          <div id="companyName" class="company">AMOS</div>
+          <div class="tag">Work assignment by reporting manager</div>
+          <div id="companyContact" class="contact"></div>
+        </div>
+        <div class="docid">
+          <div class="kicker">Project linked task</div>
+          <h1>Assign work</h1>
+          <div class="badge" id="draftTag"></div>
+        </div>
+      </header>
+
+      <div class="meta">
+        <label class="cell"><span class="lbl">Work ID</span><input id="WorkId" readonly></label>
+        <label class="cell"><span class="lbl">Project</span><select id="EnquiryNo"></select></label>
+        <label class="cell"><span class="lbl">Project number</span><input id="ProjectNo" readonly></label>
+        <label class="cell"><span class="lbl">Status</span><input id="Status" readonly></label>
+      </div>
+
+      <section class="section">
+        <h2>1. Assignment</h2>
+        <div class="g3">
+          <label class="f span3"><span>Project title</span><input id="ProjectTitle" readonly></label>
+          <label class="f"><span>Department</span><select id="Department"></select></label>
+          <label class="f"><span>Process stage</span><select id="ProcessStage"></select></label>
+          <label class="f"><span>Due date</span><input id="DueDate" type="date"></label>
+          <label class="f"><span>Assign to (user)</span><select id="AssignedToUserId"></select></label>
+          <label class="f"><span>Assignee name</span><input id="AssignedToName" list="peopleAll"></label>
+          <label class="f"><span>Assigned by</span><input id="AssignedByName" readonly></label>
+          <label class="f span3"><span>Task title</span><input id="TaskTitle" placeholder="Short work title"></label>
+          <label class="f span3"><span>Task detail</span><textarea id="TaskDetail" rows="3" placeholder="What must be completed for this project"></textarea></label>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>2. Manager authorization</h2>
+        <div class="g3">
+          <label class="f"><span>Manager decision</span><select id="ManagerDecision"></select></label>
+          <label class="f span2"><span>Manager remarks</span><input id="ManagerRemarks" placeholder="Approve / reject notes"></label>
+          <label class="f span3"><span>User remarks (from My work)</span><textarea id="AssigneeRemarks" rows="2" readonly></textarea></label>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>3. Assignments on this project</h2>
+        <div class="picker noprint" style="margin:0 0 10px">
+          <label>Open assignment
+            <select id="existingDoc"></select>
+          </label>
+        </div>
+        <table class="dash-table" id="assignTable">
+          <thead>
+            <tr><th>Work</th><th>Task</th><th>Person</th><th>Dept</th><th>Stage</th><th>Status</th><th>Manager</th></tr>
+          </thead>
+          <tbody id="assignBody"></tbody>
+        </table>
+        <p class="note" id="packNote">Project PPT syncs to Google Drive when you save or authorize.</p>
+      </section>
+    </article>
+  </form>
+
+  <datalist id="peopleAll"></datalist>
+  <script src="assets/cloud-config.js"></script>
+  <script src="assets/auth.js"></script>
+  <script src="assets/work.js"></script>
+</body>
+</html>

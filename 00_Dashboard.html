@@ -1,0 +1,115 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AMOS Management Dashboard</title>
+  <link rel="stylesheet" href="assets/doc.css">
+</head>
+<body data-doc="dashboard">
+  <div class="toolbar noprint">
+    <a href="00_Dashboard.html" aria-current="page">Dashboard</a>
+    <a href="01_Enquiry_Sheet.html">Enquiry</a>
+    <a href="02_Store_Requisition.html">Store</a>
+    <a href="03_Outside_Test_Pass.html">Test pass</a>
+    <a href="04_Store_Stock_Entry.html">Store stock</a>
+    <a href="05_3D_Print_Job.html">3D print</a>
+    <a href="06_Purchase_Order.html">Purchase order</a>
+    <a href="07_Work_Assign.html">Assign work</a>
+    <a href="08_My_Work.html">My work</a>
+    <a href="09_Project_Pack.html">Project pack</a>
+    <button type="button" id="btnReload">Reload</button>
+    <input id="webAppUrl" type="hidden">
+    <button type="button" id="btnCloud" hidden>Connect cloud</button>
+    <span class="status" id="status"></span>
+  </div>
+
+  <div class="dash">
+    <header class="letterhead dash-letterhead">
+      <img id="companyLogo" alt="Company logo" src="assets/company-logo.jpg">
+      <div class="who">
+        <div id="companyName" class="company">AMOS</div>
+        <div class="tag">Management process view</div>
+        <div class="contact" id="userLine"></div>
+      </div>
+      <div class="docid">
+        <div class="kicker">Live project overview</div>
+        <h1>Project dashboard</h1>
+      </div>
+    </header>
+
+    <div class="dash-grid" id="kpi"></div>
+
+    <nav class="dash-views noprint" aria-label="Dashboard views">
+      <button type="button" class="dash-view-btn on" data-view="projects">Projects</button>
+      <button type="button" class="dash-view-btn" data-view="department">Department</button>
+      <button type="button" class="dash-view-btn" data-view="process">Work process</button>
+      <button type="button" class="dash-view-btn" data-view="people">People work</button>
+    </nav>
+
+    <section class="section tile-glow dash-panel" data-panel="department" hidden style="margin-bottom:16px">
+      <h2>Department view</h2>
+      <table class="dash-table">
+        <thead>
+          <tr><th>Department</th><th>Assigned</th><th>Submitted</th><th>Approved</th><th>Rejected</th><th>Progress</th></tr>
+        </thead>
+        <tbody id="deptBody"></tbody>
+      </table>
+    </section>
+
+    <section class="section tile-glow dash-panel" data-panel="process" hidden style="margin-bottom:16px">
+      <h2>Work process view</h2>
+      <table class="dash-table">
+        <thead>
+          <tr><th>Process stage</th><th>Assigned</th><th>In progress / submitted</th><th>Authorized complete</th><th>Open projects</th></tr>
+        </thead>
+        <tbody id="processBody"></tbody>
+      </table>
+    </section>
+
+    <section class="section tile-glow dash-panel" data-panel="people" hidden style="margin-bottom:16px">
+      <h2>Person — assigned &amp; completed</h2>
+      <table class="dash-table">
+        <thead>
+          <tr><th>Person</th><th>Assigned</th><th>Submitted</th><th>Manager approved</th><th>Pending auth</th></tr>
+        </thead>
+        <tbody id="peopleBody"></tbody>
+      </table>
+    </section>
+
+    <section class="section tile-glow dash-panel" data-panel="projects" style="margin-bottom:16px">
+      <h2>Projects in process</h2>
+      <table class="dash-table">
+        <thead>
+          <tr><th>Project</th><th>Enquiry</th><th>Title</th><th>Owner</th><th>Stage</th><th>Progress</th><th>Status</th><th>Open</th></tr>
+        </thead>
+        <tbody id="projectBody"></tbody>
+      </table>
+    </section>
+
+    <section class="section tile-glow" style="margin-bottom:16px">
+      <h2>Waiting on people</h2>
+      <table class="dash-table">
+        <thead>
+          <tr><th>Type</th><th>Number</th><th>Project</th><th>Waiting for</th><th>Status</th></tr>
+        </thead>
+        <tbody id="pendingBody"></tbody>
+      </table>
+    </section>
+
+    <section class="section tile-glow">
+      <h2>Recent notifications</h2>
+      <table class="dash-table">
+        <thead>
+          <tr><th>When</th><th>Event</th><th>To</th><th>Subject</th><th>Mail</th></tr>
+        </thead>
+        <tbody id="notifyBody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <script src="assets/cloud-config.js"></script>
+  <script src="assets/auth.js"></script>
+  <script src="assets/dashboard.js"></script>
+</body>
+</html>

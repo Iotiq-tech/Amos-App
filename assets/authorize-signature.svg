@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="160" viewBox="0 0 480 160" role="img" aria-label="Authorize signature placeholder">
+  <rect width="480" height="160" fill="#ffffff"/>
+  <rect x="1" y="1" width="478" height="158" fill="none" stroke="#e5eaf0" stroke-width="2"/>
+  <text x="24" y="36" fill="#8fa3b8" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600">Authorize signature</text>
+  <path d="M48 108 C 90 70, 130 130, 170 96 S 240 70, 280 104 S 340 130, 390 88" fill="none" stroke="#0b1f33" stroke-width="3.2" stroke-linecap="round"/>
+  <line x1="40" y1="122" x2="420" y2="122" stroke="#c5ced6" stroke-width="1.5"/>
+  <text x="40" y="144" fill="#5c6b7a" font-family="Segoe UI, Arial, sans-serif" font-size="12">Replace this file in assets/ with your signed image (white background)</text>
+</svg>

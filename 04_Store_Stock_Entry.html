@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Store Stock Entry</title>
+  <link rel="stylesheet" href="assets/doc.css">
+</head>
+<body data-doc="store">
+  <div class="toolbar noprint">
+    <a href="00_Dashboard.html">Dashboard</a>
+    <a href="01_Enquiry_Sheet.html">Enquiry</a>
+    <a href="02_Store_Requisition.html">Store</a>
+    <a href="03_Outside_Test_Pass.html">Test pass</a>
+    <a href="04_Store_Stock_Entry.html" aria-current="page">Store stock</a>
+    <a href="05_3D_Print_Job.html">3D print</a>
+    <a href="06_Purchase_Order.html">Purchase order</a>
+    <a href="07_Work_Assign.html">Assign work</a>
+    <a href="08_My_Work.html">My work</a>
+    <a href="09_Project_Pack.html">Project pack</a>
+    <button type="button" id="btnOpen">Open master Excel</button>
+    <button type="button" id="btnReload">Reload</button>
+    <button type="button" class="primary save-btn" id="btnSave">Save</button>
+    <button type="button" id="btnPrint">Print A4</button>
+    <input id="webAppUrl" type="hidden">
+    <button type="button" id="btnCloud" hidden>Connect cloud</button>
+    <span class="status" id="status"></span>
+    <input id="fileFallback" type="file" accept=".xlsx" hidden>
+  </div>
+
+  <details class="help noprint">
+    <summary>Store manager material entry</summary>
+    <p>Receive materials into a store location. Stock updates on StoreStock. Optional project link keeps the receipt against the same project number used by enquiry, requisition, test pass, and 3D print.</p>
+  </details>
+  <div class="banner noprint" id="banner" hidden></div>
+
+  <form id="docForm" autocomplete="off">
+    <article class="page">
+      <header class="letterhead">
+        <img id="companyLogo" alt="Company logo" src="assets/company-logo.jpg">
+        <div class="who">
+          <div id="companyName" class="company">AMOS</div>
+          <div id="companyTagline" class="tag">Store materials</div>
+          <div id="companyContact" class="contact"></div>
+        </div>
+        <div class="docid">
+          <div class="kicker">Store manager</div>
+          <h1>Stock Entry</h1>
+          <div class="badge" id="draftTag"></div>
+        </div>
+      </header>
+
+      <div class="meta">
+        <label class="cell"><span class="lbl">Receipt ID</span><input id="ReceiptId"></label>
+        <label class="cell"><span class="lbl">Date</span><input id="ReceiptDate" type="date"></label>
+        <label class="cell"><span class="lbl">Location</span><select id="LocationCode"></select></label>
+        <label class="cell"><span class="lbl">Entered by</span><input id="EnteredBy" list="peopleStore"></label>
+      </div>
+
+      <section class="section">
+        <h2>1. Material</h2>
+        <div class="g3">
+          <label class="f"><span>Item</span><select id="ItemCode"></select></label>
+          <label class="f"><span>Description</span><input id="Description"></label>
+          <label class="f"><span>UOM</span><select id="UOM"></select></label>
+          <label class="f"><span>Quantity in</span><input id="Qty" type="number" min="0" step="0.01"></label>
+          <label class="f"><span>Project number</span><input id="ProjectNo" list="projectList"></label>
+          <label class="f"><span>Enquiry number</span><input id="EnquiryNo" list="enquiryList"></label>
+          <label class="f span3"><span>Remarks</span><textarea id="Remarks"></textarea></label>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>2. Current stock</h2>
+        <table class="lines">
+          <thead>
+            <tr><th>Item</th><th>Description</th><th>Location</th><th>On hand</th><th>Min</th><th>UOM</th></tr>
+          </thead>
+          <tbody id="stockBody"></tbody>
+        </table>
+      </section>
+
+      <footer class="foot">
+        <div>Only Store Manager / Store Keeper roles can save stock entries.</div>
+        <div id="updatedLabel">—</div>
+      </footer>
+    </article>
+  </form>
+
+  <datalist id="peopleStore"></datalist>
+  <datalist id="projectList"></datalist>
+  <datalist id="enquiryList"></datalist>
+
+  <script src="assets/exceljs.min.js"></script>
+  <script src="assets/cloud-config.js"></script>
+  <script src="assets/auth.js"></script>
+  <script src="assets/master.js"></script>
+</body>
+</html>

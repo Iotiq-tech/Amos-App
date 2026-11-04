@@ -1,0 +1,183 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Outside Test Pass</title>
+  <link rel="stylesheet" href="assets/doc.css">
+</head>
+<body data-doc="pass">
+  <div class="toolbar noprint">
+    <a href="00_Dashboard.html">Dashboard</a>
+    <a href="01_Enquiry_Sheet.html">Enquiry</a>
+    <a href="02_Store_Requisition.html">Store</a>
+    <a href="03_Outside_Test_Pass.html" aria-current="page">Test pass</a>
+    <a href="04_Store_Stock_Entry.html">Store stock</a>
+    <a href="05_3D_Print_Job.html">3D print</a>
+    <a href="06_Purchase_Order.html">Purchase order</a>
+    <a href="07_Work_Assign.html">Assign work</a>
+    <a href="08_My_Work.html">My work</a>
+    <a href="09_Project_Pack.html">Project pack</a>
+    <button type="button" id="btnOpen">Open master Excel</button>
+    <button type="button" id="btnReload">Reload</button>
+    <button type="button" id="btnNew">New pass</button>
+    <button type="button" class="primary save-btn" id="btnSave">Save</button>
+    <button type="button" id="btnPrint">Print A4</button>
+    <input id="webAppUrl" type="hidden">
+    <button type="button" id="btnCloud" hidden>Connect cloud</button>
+    <span class="status" id="status"></span>
+    <input id="fileFallback" type="file" accept=".xlsx" hidden>
+  </div>
+
+  <details class="help noprint">
+    <summary>How this sheet links to the workbook</summary>
+    <p>Choose the enquiry, then the store requisition that released the material. The project number comes from the enquiry. Store release and project coordinator approval are both stored on the GatePasses sheet. Example: GTP-FLY-2026-042 for REQ-STR-2026-089 and project PRJ-DRN-2026-001.</p>
+  </details>
+  <div class="banner noprint" id="banner" hidden></div>
+  <div class="picker noprint">
+    <label>Open a saved pass
+      <select id="existingDoc"></select>
+    </label>
+  </div>
+
+  <form id="docForm" autocomplete="off">
+    <article class="page">
+      <header class="letterhead">
+        <img id="companyLogo" alt="Company logo" src="assets/company-logo.jpg">
+        <div class="who">
+          <div id="companyName" class="company">AMOS</div>
+          <div id="companyTagline" class="tag">Drones &amp; Related Electronics</div>
+          <div id="companyContact" class="contact"></div>
+        </div>
+        <div class="docid">
+          <div class="kicker">Material leave pass</div>
+          <h1>Outside Test Pass</h1>
+          <div class="badge" id="draftTag"></div>
+        </div>
+      </header>
+
+      <div class="meta">
+        <label class="cell">
+          <span class="lbl">Pass ID</span>
+          <input id="PassID" aria-label="Pass ID">
+        </label>
+        <label class="cell">
+          <span class="lbl">Project number</span>
+          <input id="ProjectNo" readonly aria-label="Project number">
+        </label>
+        <label class="cell">
+          <span class="lbl">Enquiry number</span>
+          <select id="EnquiryNo" aria-label="Enquiry number"></select>
+        </label>
+        <label class="cell">
+          <span class="lbl">Status</span>
+          <select id="Status" aria-label="Status"></select>
+        </label>
+      </div>
+
+      <ol class="chain" id="chain"></ol>
+
+      <section class="section">
+        <h2>1. Authority</h2>
+        <div class="g3">
+          <label class="f"><span>Requisition</span><select id="RequisitionID"></select></label>
+          <label class="f"><span>This pass is for</span><select id="ProcessStage"></select></label>
+          <label class="f"><span>Pass date</span><input id="PassDate" type="date"></label>
+          <label class="f span3"><span>Project</span><input id="projectTitle" readonly></label>
+        </div>
+        <p class="note" id="droneLine"></p>
+      </section>
+
+      <section class="section">
+        <h2>2. Movement</h2>
+        <div class="g3">
+          <label class="f"><span>Taken by</span><input id="TakenBy" list="peopleAll"></label>
+          <label class="f"><span>Team</span><input id="Team"></label>
+          <label class="f"><span>Return due</span><input id="ReturnDue" type="date"></label>
+          <label class="f"><span>Valid from</span><input id="ValidFrom" type="datetime-local"></label>
+          <label class="f"><span>Valid until</span><input id="ValidUntil" type="datetime-local"></label>
+          <label class="f"><span>Destination</span><input id="Destination" list="locationList"></label>
+          <label class="f span2"><span>Flight / test area</span><input id="FlightArea"></label>
+          <label class="f span3"><span>Purpose</span><textarea id="Purpose"></textarea></label>
+          <label class="f span3"><span>Conditions</span><textarea id="Conditions"></textarea></label>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>3. Materials carried</h2>
+        <table class="lines">
+          <thead>
+            <tr>
+              <th class="n">#</th>
+              <th>Item</th>
+              <th>Description</th>
+              <th>Spec</th>
+              <th class="u">UOM</th>
+              <th class="q">Qty</th>
+              <th>Remarks</th>
+              <th class="x noprint"></th>
+            </tr>
+          </thead>
+          <tbody id="linesBody"></tbody>
+        </table>
+        <button type="button" class="rowbtn noprint" id="btnAddLine">Add line</button>
+        <button type="button" class="rowbtn noprint" id="btnPull">Copy approved lines from requisition</button>
+        <p class="note" id="qtyNote"></p>
+      </section>
+
+      <section class="section">
+        <h2>4. Release and approval</h2>
+        <div class="pair">
+          <div class="box">
+            <span class="stamp pending" id="stampStore">Pending</span>
+            <h3>Store release</h3>
+            <div class="g2">
+              <label class="f"><span>Store keeper</span><input id="StoreKeeper" list="peopleStore"></label>
+              <label class="f"><span>Decision</span><select id="StoreDecision"></select></label>
+              <label class="f"><span>Date</span><input id="StoreDate" type="date"></label>
+            </div>
+            <div class="sign-line"><i></i><em id="sigStore">Signature</em></div>
+          </div>
+          <div class="box">
+            <span class="stamp pending" id="stampCoord">Pending</span>
+            <h3>Project coordinator</h3>
+            <div class="g2">
+              <label class="f"><span>Name</span><input id="Coordinator" list="peopleCoord"></label>
+              <label class="f"><span>Decision</span><select id="CoordinatorDecision"></select></label>
+              <label class="f"><span>Date</span><input id="CoordinatorDate" type="date"></label>
+              <label class="f span2"><span>Remarks</span><input id="CoordinatorRemarks"></label>
+            </div>
+            <div class="sign-line"><i></i><em id="sigCoord">Signature</em></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>5. Linked file names</h2>
+        <table class="links">
+          <thead><tr><th>Document</th><th>Number</th><th>File name</th></tr></thead>
+          <tbody id="linkBody"></tbody>
+        </table>
+      </section>
+
+      <footer class="foot">
+        <div>
+          <div>File name: <strong id="fileNameLabel">—</strong></div>
+          <div>Valid only with the project number and requisition printed above. Revision <span id="revLabel">—</span>.</div>
+        </div>
+        <div>Updated <span id="updatedLabel">—</span></div>
+      </footer>
+    </article>
+  </form>
+
+  <datalist id="peopleAll"></datalist>
+  <datalist id="peopleCoord"></datalist>
+  <datalist id="peopleStore"></datalist>
+  <datalist id="locationList"></datalist>
+
+  <script src="assets/exceljs.min.js"></script>
+  <script src="assets/cloud-config.js"></script>
+  <script src="assets/auth.js"></script>
+  <script src="assets/master.js"></script>
+</body>
+</html>

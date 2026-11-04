@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Project pack (Management)</title>
+  <link rel="stylesheet" href="assets/doc.css">
+</head>
+<body data-doc="projectpack">
+  <div class="toolbar noprint">
+    <a href="00_Dashboard.html">Dashboard</a>
+    <a href="07_Work_Assign.html">Assign work</a>
+    <a href="08_My_Work.html">My work</a>
+    <a href="09_Project_Pack.html" aria-current="page">Project pack</a>
+    <button type="button" id="btnReload">Reload</button>
+    <button type="button" class="primary" id="btnOpenPack">Open Slides</button>
+    <button type="button" id="btnDownloadPpt">Download PPT</button>
+    <button type="button" id="btnSyncPack">Refresh pack</button>
+    <input id="webAppUrl" type="hidden">
+    <span class="status" id="status"></span>
+  </div>
+
+  <details class="help noprint" open>
+    <summary>Management only — project documentation pack</summary>
+    <p>Every project uses the same Slides/PPT format: cover, standard workflow, department view, assigned work with authorization, and person completed view. Download or review from Google Drive. Non-management roles cannot open this page.</p>
+  </details>
+
+  <div class="dash">
+    <header class="letterhead dash-letterhead">
+      <img id="companyLogo" alt="Company logo" src="assets/company-logo.jpg">
+      <div class="who">
+        <div id="companyName" class="company">AMOS</div>
+        <div class="tag">Project documentation pack</div>
+        <div class="contact" id="userLine"></div>
+      </div>
+      <div class="docid">
+        <div class="kicker">Management review</div>
+        <h1>Project packs</h1>
+      </div>
+    </header>
+
+    <section class="section tile-glow" style="margin-bottom:16px">
+      <h2>Select project</h2>
+      <div class="g2">
+        <label class="f"><span>Project / enquiry</span><select id="EnquiryNo"></select></label>
+        <label class="f"><span>Project number</span><input id="ProjectNo" readonly></label>
+        <label class="f span2"><span>Title</span><input id="ProjectTitle" readonly></label>
+        <label class="f span2"><span>Slides URL</span><input id="SlidesUrl" readonly></label>
+        <label class="f span2"><span>PPT download URL</span><input id="PptxUrl" readonly></label>
+      </div>
+    </section>
+
+    <section class="section tile-glow">
+      <h2>Packs on file</h2>
+      <table class="dash-table">
+        <thead>
+          <tr><th>Project</th><th>Title</th><th>Updated</th><th>By</th><th>Open</th></tr>
+        </thead>
+        <tbody id="packBody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <script src="assets/cloud-config.js"></script>
+  <script src="assets/auth.js"></script>
+  <script src="assets/work.js"></script>
+</body>
+</html>
