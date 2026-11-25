@@ -96,11 +96,13 @@
     }).join("") || '<tr><td colspan="6">No assignment activity in the last 7 days.</td></tr>';
 
     document.getElementById("allWorkBody").innerHTML = works.map(function (row) {
+      var open = row.Status !== "Approved" && row.ManagerDecision !== "Approved";
+      var ping = open ? '<button type="button" class="hr-ping" data-work="' + esc(row.WorkId) + '">Remind</button>' : "—";
       return "<tr><td>" + esc(row.WorkId) + "</td><td>" + esc(row.ProjectNo) + "</td><td>" + esc(row.TaskTitle) +
         "</td><td>" + esc(row.AssignedToName) + "</td><td>" + esc(row.Department) + "</td><td>" + esc(row.RequestingDepartment || "—") +
         "</td><td>" + esc(row.CrossDeptRequest || "No") + "</td><td>" + esc(row.Status) + "</td><td>" + esc(row.ManagerDecision || "Pending") +
-        "</td><td>" + esc(row.UpdatedAt) + "</td></tr>";
-    }).join("") || '<tr><td colspan="10">No assignments yet.</td></tr>';
+        "</td><td>" + esc(row.UpdatedAt) + "</td><td>" + ping + "</td></tr>";
+    }).join("") || '<tr><td colspan="11">No assignments yet.</td></tr>';
 
     var s = DroneAuth.user();
     var line = document.getElementById("userLine");
@@ -148,6 +150,22 @@
   var box = document.getElementById("webAppUrl");
   if (box) box.value = (cfg.webAppUrl || "").trim();
   document.getElementById("btnReload").addEventListener("click", function () { load(true); });
+  document.getElementById("allWorkBody").addEventListener("click", async function (ev) {
+    var btn = ev.target.closest(".hr-ping");
+    if (!btn) return;
+    var workId = btn.getAttribute("data-work");
+    btn.disabled = true;
+    DroneAuth.showLoading("Sending reminder…");
+    try {
+      var data = await gasRequest("hrPingWork", { workId: workId });
+      setStatus(data.message || "Reminder sent.");
+    } catch (err) {
+      setStatus(err.message || String(err), true);
+      btn.disabled = false;
+    } finally {
+      DroneAuth.hideLoading();
+    }
+  });
   document.getElementById("btnPrintWeek").addEventListener("click", function () { window.print(); });
   DroneAuth.decorateChrome();
   load();
