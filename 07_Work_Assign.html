@@ -23,7 +23,7 @@
 
   <details class="help noprint" open>
     <summary>Reporting manager — assign work by project</summary>
-    <p>Pick the project (enquiry), department, workflow stage, and the person who must complete the task. Saving writes the assignment and refreshes the shared Google Slides / PPT project pack (same format for every project). When the user submits, authorize with Approved/Rejected and remarks.</p>
+    <p>Pick the project (enquiry), owning department, workflow stage, and assignee. For cross-department requests, set <strong>Requesting department</strong> and mark cross-dept; only the <strong>owning department manager</strong> may assign that task. HR receives a copy of every assignment. Saving refreshes the project Slides / PPT pack.</p>
   </details>
   <div class="banner noprint" id="banner" hidden></div>
 
@@ -54,7 +54,10 @@
         <h2>1. Assignment</h2>
         <div class="g3">
           <label class="f span3"><span>Project title</span><input id="ProjectTitle" readonly></label>
-          <label class="f"><span>Department</span><select id="Department"></select></label>
+          <label class="f"><span>Department (task)</span><select id="Department"></select></label>
+          <label class="f"><span>Owning department</span><select id="OwningDepartment"></select></label>
+          <label class="f"><span>Requesting department</span><select id="RequestingDepartment"></select></label>
+          <label class="f"><span>Cross-dept request</span><select id="CrossDeptRequest"><option value="No">No</option><option value="Yes">Yes — reviewed by owning manager</option></select></label>
           <label class="f"><span>Process stage</span><select id="ProcessStage"></select></label>
           <label class="f"><span>Due date</span><input id="DueDate" type="date"></label>
           <label class="f"><span>Assign to (user)</span><select id="AssignedToUserId"></select></label>

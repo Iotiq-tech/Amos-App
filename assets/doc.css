@@ -1260,6 +1260,20 @@ body > * { position: relative; z-index: 1; }
   margin-top: 4px;
 }
 
+.org-chart-img {
+  display: block;
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto 12px;
+  border: 1px solid var(--line, #d0d7de);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.org-page .section h2 {
+  margin-top: 1.2rem;
+}
+
 .dash-table {
   width: 100%;
   border-collapse: collapse;

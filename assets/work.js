@@ -142,9 +142,12 @@
       return { value: row.EnquiryNo, label: row.EnquiryNo + " — " + (row.ProjectTitle || row.ProjectNo) };
     }));
     fillSelect("EnquiryNo", enqOpts, val("EnquiryNo"));
-    fillSelect("Department", listValues("Department", ["Projects", "Store", "Flight Test", "Electronics", "Management"]).map(function (v) {
+    var depts = listValues("Department", ["HR & Operation", "General Store", "Production", "R&D-UAV", "DESIGN", "R&D-IOT"]).map(function (v) {
       return { value: v, label: v };
-    }), val("Department") || "Projects");
+    });
+    fillSelect("Department", depts, val("Department") || "Production");
+    fillSelect("OwningDepartment", depts, val("OwningDepartment") || val("Department") || "Production");
+    fillSelect("RequestingDepartment", depts, val("RequestingDepartment") || val("Department") || "Production");
     fillSelect("ProcessStage", listValues("ProcessStage", ["Enquiry", "Store requisition", "Outside test pass", "POC", "Pilot", "Full production", "Testing"]).map(function (v) {
       return { value: v, label: v };
     }), val("ProcessStage") || "Enquiry");
@@ -175,7 +178,10 @@
     setVal("EnquiryNo", "");
     setVal("ProjectNo", "");
     setVal("ProjectTitle", "");
-    setVal("Department", "Projects");
+    setVal("Department", "Production");
+    setVal("OwningDepartment", "Production");
+    setVal("RequestingDepartment", "Production");
+    setVal("CrossDeptRequest", "No");
     setVal("ProcessStage", "Enquiry");
     setVal("DueDate", today());
     setVal("AssignedToUserId", "");
@@ -197,9 +203,9 @@
     if (!record) return;
     suppress = true;
     current = record;
-    ["WorkId", "EnquiryNo", "ProjectNo", "ProjectTitle", "Department", "ProcessStage", "DueDate",
-      "AssignedToUserId", "AssignedToName", "AssignedByName", "TaskTitle", "TaskDetail", "Status",
-      "ManagerDecision", "ManagerRemarks", "AssigneeRemarks"].forEach(function (id) {
+    ["WorkId", "EnquiryNo", "ProjectNo", "ProjectTitle", "Department", "OwningDepartment", "RequestingDepartment",
+      "CrossDeptRequest", "ProcessStage", "DueDate", "AssignedToUserId", "AssignedToName", "AssignedByName", "TaskTitle",
+      "TaskDetail", "Status", "ManagerDecision", "ManagerRemarks", "AssigneeRemarks"].forEach(function (id) {
       setVal(id, record[id] != null ? record[id] : "");
     });
     fillCommon();
@@ -272,6 +278,9 @@
       ProjectNo: val("ProjectNo"),
       ProjectTitle: val("ProjectTitle"),
       Department: val("Department"),
+      OwningDepartment: val("OwningDepartment") || val("Department"),
+      RequestingDepartment: val("RequestingDepartment") || val("Department"),
+      CrossDeptRequest: val("CrossDeptRequest") || "No",
       ProcessStage: val("ProcessStage"),
       DueDate: val("DueDate"),
       AssignedToUserId: val("AssignedToUserId"),
@@ -293,50 +302,76 @@
     });
   }
 
-  async function load() {
-    DroneAuth.showLoading("Loading work…");
+  function workCacheKey_(scope) {
+    var s = DroneAuth.user() || {};
+    return "droneDoc.boot." + (s.userId || "anon") + "." + scope;
+  }
+
+  function readWorkCache_(scope) {
     try {
-      var scope = KIND === "projectpack" ? "projectpack" : (KIND === "workreport" ? "workreport" : "workassign");
-      var data = await gasRequest("bootstrap", { scope: scope });
-      if (!data.ok) throw new Error(data.error || "Load failed");
-      adopt(data);
-      fillCommon();
-      applyLogo();
-      paintChrome();
-      if (KIND === "workassign") {
-        blankAssign();
-        var params = new URLSearchParams(location.search);
-        if (params.get("work")) {
-          var found = (state.workAssignments || []).find(function (row) { return row.WorkId === params.get("work"); });
-          if (found) fillRecord(found);
-        } else if (params.get("enq")) {
-          setVal("EnquiryNo", params.get("enq"));
-          applyEnquiry(params.get("enq"));
-          renderAssignTable();
-        }
-      } else if (KIND === "workreport") {
-        renderMyTable();
-        var wp = new URLSearchParams(location.search).get("work");
-        var mine = (state.workAssignments || []);
-        if (wp) {
-          var row = mine.find(function (r) { return r.WorkId === wp; });
-          if (row) fillRecord(row);
-        } else if (mine[0]) fillRecord(mine[0]);
-      } else if (KIND === "projectpack") {
-        if (!DroneAuth.isManagement()) {
-          setStatus("Only Management can view project packs.", true);
-          return;
-        }
-        renderPacks();
-        fillCommon();
+      var pack = JSON.parse(sessionStorage.getItem(workCacheKey_(scope)) || "null");
+      if (!pack || !pack.at || !pack.data || !pack.data.ok) return null;
+      if (Date.now() - pack.at > 90000) return null;
+      return pack.data;
+    } catch (e) { return null; }
+  }
+
+  function writeWorkCache_(scope, data) {
+    try {
+      sessionStorage.setItem(workCacheKey_(scope), JSON.stringify({ at: Date.now(), data: data }));
+    } catch (e) { /* ignore */ }
+  }
+
+  async function load(force) {
+    var scope = KIND === "projectpack" ? "projectpack" : (KIND === "workreport" ? "workreport" : "workassign");
+    var data = force ? null : readWorkCache_(scope);
+    var fromCache = !!data;
+    if (!data) {
+      DroneAuth.showLoading("Loading work…");
+      try {
+        data = await gasRequest("bootstrap", { scope: scope });
+        if (!data.ok) throw new Error(data.error || "Load failed");
+        writeWorkCache_(scope, data);
+      } catch (err) {
+        setStatus(err.message || String(err), true);
+        return;
+      } finally {
+        DroneAuth.hideLoading();
       }
-      setStatus("Loaded.");
-      DroneAuth.decorateChrome();
-    } catch (err) {
-      setStatus(err.message || String(err), true);
-    } finally {
-      DroneAuth.hideLoading();
     }
+    adopt(data);
+    fillCommon();
+    applyLogo();
+    paintChrome();
+    if (KIND === "workassign") {
+      blankAssign();
+      var params = new URLSearchParams(location.search);
+      if (params.get("work")) {
+        var found = (state.workAssignments || []).find(function (row) { return row.WorkId === params.get("work"); });
+        if (found) fillRecord(found);
+      } else if (params.get("enq")) {
+        setVal("EnquiryNo", params.get("enq"));
+        applyEnquiry(params.get("enq"));
+        renderAssignTable();
+      }
+    } else if (KIND === "workreport") {
+      renderMyTable();
+      var wp = new URLSearchParams(location.search).get("work");
+      var mine = (state.workAssignments || []);
+      if (wp) {
+        var row = mine.find(function (r) { return r.WorkId === wp; });
+        if (row) fillRecord(row);
+      } else if (mine[0]) fillRecord(mine[0]);
+    } else if (KIND === "projectpack") {
+      if (!DroneAuth.isExecutive()) {
+        setStatus("Only CEO / CTO / Management can view project packs.", true);
+        return;
+      }
+      renderPacks();
+      fillCommon();
+    }
+    setStatus(fromCache ? "Loaded · cached. Reload for the latest." : "Loaded.");
+    DroneAuth.decorateChrome();
   }
 
   function bind() {
@@ -511,7 +546,7 @@
     });
 
     var reload = document.getElementById("btnReload");
-    if (reload) reload.addEventListener("click", load);
+    if (reload) reload.addEventListener("click", function () { load(true); });
   }
 
   var cfg = window.DRONE_DOC_CONFIG || {};

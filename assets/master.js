@@ -893,9 +893,14 @@
     return "full";
   }
 
+  function bootCacheKey_() {
+    const s = window.DroneAuth && DroneAuth.user();
+    return "droneDoc.boot." + ((s && s.userId) || "anon") + "." + bootScope_();
+  }
+
   function readBootCache_() {
     try {
-      const raw = sessionStorage.getItem("droneDoc.boot." + bootScope_());
+      const raw = sessionStorage.getItem(bootCacheKey_());
       if (!raw) return null;
       const pack = JSON.parse(raw);
       if (!pack || !pack.at || !pack.data || !pack.data.ok) return null;
@@ -908,7 +913,7 @@
 
   function writeBootCache_(data) {
     try {
-      sessionStorage.setItem("droneDoc.boot." + bootScope_(), JSON.stringify({ at: Date.now(), data: data }));
+      sessionStorage.setItem(bootCacheKey_(), JSON.stringify({ at: Date.now(), data: data }));
     } catch (err) { /* quota / private mode */ }
   }
 
@@ -932,11 +937,7 @@
     const scope = options.scope || bootScope_();
     const cached = options.force ? null : readBootCache_();
     if (cached) {
-      applyCloudData_(cached, "Connected · cached");
-      gasRequest("bootstrap", { scope: scope }).then(function (data) {
-        if (!data || !data.ok) return;
-        applyCloudData_(data, "Connected" + (data.settings && data.settings.CompanyName ? " · " + data.settings.CompanyName : ""));
-      }).catch(function () { /* keep cached view */ });
+      applyCloudData_(cached, "Connected · cached. Reload for the latest.");
       return;
     }
     if (window.DroneAuth) DroneAuth.showLoading("Connecting to cloud…");
@@ -2125,7 +2126,7 @@
     });
     document.getElementById("btnReload").addEventListener("click", async function () {
       try {
-        if (mode === "cloud") await connectCloud(cloudUrl());
+        if (mode === "cloud") await connectCloud(cloudUrl(), { force: true });
         else if (fileHandle) await readHandle(fileHandle);
         else throw new Error("Nothing is connected yet.");
       } catch (err) {

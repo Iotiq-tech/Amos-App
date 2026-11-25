@@ -159,17 +159,20 @@
       }, 0) / enquiries.length);
     }
 
-    document.getElementById("kpi").innerHTML = [
-      ["Projects open", open],
-      ["Avg completion", avgProgress + "%"],
-      ["Store requisitions waiting", pendingReq],
-      ["Test passes waiting", pendingPass],
-      ["3D prints waiting", pendingPrint],
-      ["POs waiting", pendingPo],
-      ["Work awaiting auth", workPending],
-      ["Work approved", workDone],
-      ["Notifications", notes.length]
-    ].map(function (row) {
+    var tiles = [
+      ["Projects open", open, "enquiry"],
+      ["Avg completion", avgProgress + "%", "enquiry"]
+    ];
+    if (DroneAuth.can("requisition", "view")) tiles.push(["Store requisitions waiting", pendingReq, "requisition"]);
+    if (DroneAuth.can("pass", "view")) tiles.push(["Test passes waiting", pendingPass, "pass"]);
+    if (DroneAuth.can("print3d", "view")) tiles.push(["3D prints waiting", pendingPrint, "print3d"]);
+    if (DroneAuth.can("purchase", "view")) tiles.push(["POs waiting", pendingPo, "purchase"]);
+    if (DroneAuth.can("workassign", "view") || DroneAuth.can("workreport", "view") || DroneAuth.can("hrview", "view")) {
+      tiles.push(["Work awaiting auth", workPending, "work"]);
+      tiles.push(["Work approved", workDone, "work"]);
+    }
+    tiles.push(["Notifications", notes.length, "dashboard"]);
+    document.getElementById("kpi").innerHTML = tiles.map(function (row) {
       return '<div class="dash-card tile-glow"><div class="n">' + esc(row[1]) + '</div><div class="l">' + esc(row[0]) + "</div></div>";
     }).join("");
 
@@ -178,24 +181,32 @@
     renderPeople_(works);
 
     var visible = enquiries;
-    if (!DroneAuth.isManagement() && !DroneAuth.isStore() && !DroneAuth.isCoordinator()) {
+    if (!DroneAuth.isExecutive() && !DroneAuth.isHr() && !DroneAuth.isStore() && !DroneAuth.isCoordinator() && !DroneAuth.isDeptManager()) {
       visible = enquiries.filter(function (row) {
         return DroneAuth.ownsProject(row.OwnerUserId, row.OwnerEmail, row.Coordinator) ||
           (s.displayName && row.AssignedTo === s.displayName);
       });
     }
 
+    function pageLink_(file, label, form, enq) {
+      if (!DroneAuth.can(form, "view")) return "";
+      var href = file + (enq ? ("?enq=" + encodeURIComponent(enq)) : "");
+      return '<a href="' + href + '">' + label + "</a>";
+    }
     document.getElementById("projectBody").innerHTML = visible.map(function (row) {
+      var links = [
+        pageLink_("01_Enquiry_Sheet.html", "Enquiry", "enquiry", row.EnquiryNo),
+        pageLink_("02_Store_Requisition.html", "Store", "requisition", row.EnquiryNo),
+        pageLink_("03_Outside_Test_Pass.html", "Pass", "pass", row.EnquiryNo),
+        pageLink_("06_Purchase_Order.html", "PO", "purchase", row.EnquiryNo),
+        pageLink_("07_Work_Assign.html", "Work", "workassign", row.EnquiryNo),
+        pageLink_("09_Project_Pack.html", "Pack", "projectpack", ""),
+        pageLink_("10_HR_Supervision.html", "HR", "hrview", "")
+      ].filter(Boolean).join(" · ");
       return "<tr><td>" + esc(row.ProjectNo) + "</td><td>" + esc(row.EnquiryNo) + "</td><td>" + esc(row.ProjectTitle) +
         "</td><td>" + esc(row.AssignedTo || row.Coordinator || row.OwnerUserId) + "</td><td>" + esc(row.CurrentStage) +
         "</td><td class=\"progress-cell\">" + progressCell_(row) + "</td><td>" + esc(row.Status) +
-        '</td><td><a href="01_Enquiry_Sheet.html?enq=' + encodeURIComponent(row.EnquiryNo) + '">Enquiry</a> · ' +
-        '<a href="02_Store_Requisition.html?enq=' + encodeURIComponent(row.EnquiryNo) + '">Store</a> · ' +
-        '<a href="03_Outside_Test_Pass.html?enq=' + encodeURIComponent(row.EnquiryNo) + '">Pass</a> · ' +
-        '<a href="06_Purchase_Order.html?enq=' + encodeURIComponent(row.EnquiryNo) + '">PO</a> · ' +
-        '<a href="07_Work_Assign.html?enq=' + encodeURIComponent(row.EnquiryNo) + '">Work</a>' +
-        (DroneAuth.isManagement() ? (' · <a href="09_Project_Pack.html">Pack</a>') : "") +
-        "</td></tr>";
+        "</td><td>" + (links || "—") + "</td></tr>";
     }).join("") || '<tr><td colspan="8">No projects for your role yet.</td></tr>';
 
     var pending = [];
@@ -314,9 +325,14 @@
     });
   }
 
+  function dashCacheKey_() {
+    var s = DroneAuth.user() || {};
+    return "droneDoc.boot." + (s.userId || "anon") + ".dashboard";
+  }
+
   function readDashCache_() {
     try {
-      var raw = sessionStorage.getItem("droneDoc.boot.dashboard");
+      var raw = sessionStorage.getItem(dashCacheKey_());
       if (!raw) return null;
       var pack = JSON.parse(raw);
       if (!pack || !pack.at || !pack.data || !pack.data.ok) return null;
@@ -329,7 +345,7 @@
 
   function writeDashCache_(data) {
     try {
-      sessionStorage.setItem("droneDoc.boot.dashboard", JSON.stringify({ at: Date.now(), data: data }));
+      sessionStorage.setItem(dashCacheKey_(), JSON.stringify({ at: Date.now(), data: data }));
     } catch (e) { /* ignore */ }
   }
 
@@ -345,10 +361,7 @@
   async function load(force) {
     var cached = force ? null : readDashCache_();
     if (cached) {
-      applyDash_(cached, "Dashboard · cached");
-      gasRequest("bootstrap", { scope: "dashboard" }).then(function (data) {
-        if (data && data.ok) applyDash_(data);
-      }).catch(function () { /* keep cache */ });
+      applyDash_(cached, "Dashboard · cached. Reload for the latest.");
       return;
     }
     DroneAuth.showLoading("Loading dashboard…");

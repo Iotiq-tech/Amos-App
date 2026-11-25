@@ -1,36 +1,45 @@
-AMOS Team Forms (GitHub Pages pack)
-===================================
+AMOS project documents
+======================
 
-This folder is what users open. Push ONLY this folder to your public GitHub repo.
+Two folders
+-----------
+  AMOS_Team_Forms\     Share / GitHub Pages only (login + forms + assets)
+  AMOS_Admin\          Keep private (Excel master, Apps Script, rebuild tools)
 
-Start
------
-1. Open index.html or 00_Login.html
-2. Sign in with the username from your coordinator
-3. Only pages allowed for your Role appear in the top bar
+GitHub Pages
+------------
+Push ONLY the contents of AMOS_Team_Forms (not this whole parent folder).
+Settings → Pages → Deploy from branch → main → / (root).
+Site opens at index.html → login.
 
-Default seed password (change after first login): ChangeMe@2026
-Example users: admin, divya, suresh, meera, farhan, sara
-
-Pages
------
-00_Login.html              Sign in
-00_Dashboard.html          Process view
-01_Enquiry_Sheet.html      Technical enquiry
-02_Store_Requisition.html  Materials request
-03_Outside_Test_Pass.html  Outside test leave pass
-04_Store_Stock_Entry.html  Store stock (store roles)
-05_3D_Print_Job.html       3D print job
-06_Purchase_Order.html     Vendor purchase order
-assets\                    Logo, styles, scripts, authorize signature
-
-Who sees what
+Do not upload
 -------------
-Controlled in the private Google Sheet → FormAccess (and Users!AllowedPages notes).
-If a page is not selected for your role (CanView=0), it will not appear in the menu
-and opening the URL redirects you away.
+  AMOS_Admin\
+  Drone_Project_Master.xlsx
+  GoogleAppsScript.gs
+  *.py rebuild scripts
+  3DPrint.xlsx
 
-Cloud
------
-assets\cloud-config.js already has the web app URL.
-Everyone writes to the same Google Sheet. No Excel file is needed on the PC.
+User pages (login roles)
+------------------------
+Visible tabs are controlled by the FormAccess sheet in the master Excel / Google Sheet.
+CanView = 1 → tab shows after login. CanView = 0 → tab is hidden.
+CanEdit = 1 → Save enabled. CanEdit = 0 → open/view only.
+
+Work reporting
+--------------
+07_Work_Assign.html   Reporting manager assigns tasks by project
+08_My_Work.html       User submits completion + remarks
+09_Project_Pack.html  Management only — Google Slides / PPT download (same format every project)
+Dashboard views: Projects | Department | Work process | People work
+
+When creating a user on the Users sheet, fill AllowedPages (see UserSetup sheet).
+After changing FormAccess, user must log out and log in again.
+
+After editing forms here
+------------------------
+  python pack_team_forms.py
+  python apply_security_upgrade.py
+
+Then copy the updated Excel into Google Sheets (or re-import), redeploy Apps Script,
+and push AMOS_Team_Forms to GitHub.

@@ -13,7 +13,9 @@
     purchase: "purchase",
     workassign: "workassign",
     workreport: "workreport",
-    projectpack: "projectpack"
+    projectpack: "projectpack",
+    hrview: "hrview",
+    orgchart: "orgchart"
   };
   var PAGE_FORM_ = {
     "00_Dashboard.html": "dashboard",
@@ -25,7 +27,9 @@
     "06_Purchase_Order.html": "purchase",
     "07_Work_Assign.html": "workassign",
     "08_My_Work.html": "workreport",
-    "09_Project_Pack.html": "projectpack"
+    "09_Project_Pack.html": "projectpack",
+    "10_HR_Supervision.html": "hrview",
+    "11_Org_Structure.html": "orgchart"
   };
   var FORM_FILE_ = {
     dashboard: "00_Dashboard.html",
@@ -37,7 +41,9 @@
     purchase: "06_Purchase_Order.html",
     workassign: "07_Work_Assign.html",
     workreport: "08_My_Work.html",
-    projectpack: "09_Project_Pack.html"
+    projectpack: "09_Project_Pack.html",
+    hrview: "10_HR_Supervision.html",
+    orgchart: "11_Org_Structure.html"
   };
 
   function readSession() {
@@ -72,12 +78,31 @@
   }
 
   function isManagement() {
-    return roleOf() === "Management";
+    var r = roleOf();
+    return r === "Management" || r === "CEO" || r === "CTO";
+  }
+
+  function isExecutive() {
+    var r = roleOf();
+    return r === "CEO" || r === "CTO" || r === "Management";
+  }
+
+  function isHr() {
+    return roleOf() === "HR";
+  }
+
+  function isDeptManager() {
+    var r = roleOf();
+    return r === "Operations" || r === "Production Head" || r === "Store Incharge" ||
+      r === "Testing Incharge" || r === "R&D Lead UAV" || r === "UAV Lead" ||
+      r === "Design Lead" || r === "R&D Lead IOT" ||
+      r === "Project Coordinator" || r === "Electronics Manager" || r === "Store Manager" ||
+      r === "Flight Test Manager" || isExecutive();
   }
 
   function isStore() {
     var r = roleOf();
-    return r === "Store Manager" || r === "Store Keeper";
+    return r === "Store Manager" || r === "Store Keeper" || r === "Store Incharge" || r === "Production Head";
   }
 
   function isCoordinator() {
@@ -325,7 +350,9 @@
       purchase: "Purchase order",
       workassign: "Assign work",
       workreport: "My work",
-      projectpack: "Project pack"
+      projectpack: "Project pack",
+      hrview: "HR supervision",
+      orgchart: "Team structure"
     };
     return Object.keys(labels).map(function (key) {
       var row = access[key] || {};
@@ -665,7 +692,15 @@
     },
     "09_Project_Pack.html": {
       title: "Project pack",
-      text: "Management only: review and download the standard project Slides/PPT documentation pack."
+      text: "CEO / CTO / Management: review and download the standard project Slides/PPT pack."
+    },
+    "10_HR_Supervision.html": {
+      title: "HR supervision",
+      text: "HR sees all assignments, weekly people completion, and authorization status (read-only)."
+    },
+    "11_Org_Structure.html": {
+      title: "Team structure",
+      text: "Org chart: CEO, CTO, HR, four department managers, and team ownership flow."
     }
   };
 
@@ -811,6 +846,8 @@
     ensureNavLink("07_Work_Assign.html", "navWorkAssign", "Assign work", "workassign");
     ensureNavLink("08_My_Work.html", "navMyWork", "My work", "workreport");
     ensureNavLink("09_Project_Pack.html", "navProjectPack", "Project pack", "projectpack");
+    ensureNavLink("10_HR_Supervision.html", "navHr", "HR supervision", "hrview");
+    ensureNavLink("11_Org_Structure.html", "navOrg", "Team structure", "orgchart");
 
     /* Hide tabs the signed-in role cannot view (FormAccess CanView = 0). */
     Array.prototype.slice.call(nav.querySelectorAll("a[href]")).forEach(function (link) {
@@ -885,7 +922,7 @@
       save.classList.add("save-btn");
       var kind = pageName();
       var editable = can(kind, "edit");
-      if (kind === "enquiry" || kind === "requisition" || kind === "pass" || kind === "store" || kind === "print3d" || kind === "purchase" || kind === "workassign" || kind === "workreport" || kind === "projectpack") {
+      if (kind === "enquiry" || kind === "requisition" || kind === "pass" || kind === "store" || kind === "print3d" || kind === "purchase" || kind === "workassign" || kind === "workreport" || kind === "projectpack" || kind === "hrview" || kind === "orgchart") {
         save.disabled = !editable;
         if (!editable) save.title = "Your role can view this form but cannot save changes.";
       }
@@ -910,6 +947,9 @@
     user: user,
     roleOf: roleOf,
     isManagement: isManagement,
+    isExecutive: isExecutive,
+    isHr: isHr,
+    isDeptManager: isDeptManager,
     isStore: isStore,
     isCoordinator: isCoordinator,
     can: can,

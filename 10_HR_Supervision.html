@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HR supervision &amp; weekly report</title>
+  <link rel="stylesheet" href="assets/doc.css">
+</head>
+<body data-doc="hrview">
+  <div class="toolbar noprint">
+    <a href="00_Dashboard.html">Dashboard</a>
+    <a href="11_Org_Structure.html">Team structure</a>
+    <a href="10_HR_Supervision.html" aria-current="page">HR supervision</a>
+    <a href="08_My_Work.html">All assignments (read-only)</a>
+    <button type="button" id="btnReload">Reload</button>
+    <button type="button" id="btnPrintWeek">Print weekly report</button>
+    <input id="webAppUrl" type="hidden">
+    <span class="status" id="status"></span>
+  </div>
+
+  <details class="help noprint" open>
+    <summary>HR — supervise assignments and weekly completion</summary>
+    <p>HR can see all work assignments across departments, process stages, and whether each task is assigned, submitted, or manager-approved. Use the weekly view for people workload and completion. HR does not assign work; department managers and CTO assign. Every new assignment is visible here after managers save on Assign work.</p>
+  </details>
+
+  <div class="dash">
+    <header class="letterhead dash-letterhead">
+      <img id="companyLogo" alt="Company logo" src="assets/company-logo.jpg">
+      <div class="who">
+        <div id="companyName" class="company">AMOS</div>
+        <div class="tag">Human resources — supervision</div>
+        <div class="contact" id="userLine"></div>
+      </div>
+      <div class="docid">
+        <div class="kicker">Read-only oversee</div>
+        <h1>HR supervision</h1>
+      </div>
+    </header>
+
+    <div class="dash-grid" id="hrKpi"></div>
+
+    <section class="section tile-glow" style="margin-bottom:16px">
+      <h2>Weekly people report</h2>
+      <p class="note noprint">Shows work completed or submitted in the last 7 days (by UpdatedAt / CompletedAt).</p>
+      <table class="dash-table" id="weeklyTable">
+        <thead>
+          <tr><th>Person</th><th>Department</th><th>Assigned (week)</th><th>Submitted</th><th>Approved</th><th>Pending auth</th></tr>
+        </thead>
+        <tbody id="weeklyBody"></tbody>
+      </table>
+    </section>
+
+    <section class="section tile-glow">
+      <h2>All assignments (live)</h2>
+      <table class="dash-table">
+        <thead>
+          <tr><th>Work</th><th>Project</th><th>Task</th><th>Person</th><th>Dept</th><th>From dept</th><th>Cross-dept</th><th>Status</th><th>Manager</th><th>Updated</th></tr>
+        </thead>
+        <tbody id="allWorkBody"></tbody>
+      </table>
+    </section>
+  </div>
+
+  <script src="assets/cloud-config.js"></script>
+  <script src="assets/auth.js"></script>
+  <script src="assets/hr.js"></script>
+</body>
+</html>
